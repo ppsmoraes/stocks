@@ -1,0 +1,27 @@
+### Project ###
+# Development environment
+dev.ipynb
+
+# Temporary folder for data files
+.temp
+
+### Python ###
+# Byte-compiled
+__pycache__/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
