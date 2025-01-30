@@ -71,6 +71,7 @@ def get_table(table_name: str, use_cache: bool = True) -> DataFrame:
 
     # Reading from the API
     try:
+        log('INFO', 'Extração de dados da API iniciada')
         df: DataFrame = get_historic_data()
         log('INFO', 'Extração de dados da API concluída')
     except ConnectionError as e:
