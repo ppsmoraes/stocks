@@ -4,6 +4,7 @@ from pandas import DataFrame
 
 import cache
 from log import read_jsonl_bottomup
+from selic import get_iof, get_ir
 
 
 def use_cache() -> bool:
@@ -19,8 +20,11 @@ def use_cache() -> bool:
 
 
 def main() -> None:
-    df: DataFrame = cache.get_table('selic', use_cache())
-    print(df.tail())
+    # df: DataFrame = cache.get_table('selic', use_cache())
+    # print(df.tail())
+
+    for i in [0, 180, 181, 360, 361, 720, 721, 99999999]:
+        print(f'{i}: {get_ir(i)}')
 
 
 if __name__ == '__main__':
