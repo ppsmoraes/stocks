@@ -116,3 +116,86 @@ def get_historic_selic() -> DataFrame:
 
     data['valor'] = data['valor'] / 100
     return data
+
+
+def brl_to_float(value: str) -> float:
+    """
+    Transforma um texto no formato monetário brasileiro em um valor decimal.
+
+    Parameters
+    ----------
+    value : str
+        Texto contendo o valor em reais.
+
+    Returns
+    -------
+    float
+        O valor em formato numérico.
+
+    See Also
+    --------
+    float_to_brl : Transforma um valor decimal em um formato monetário brasileiro.
+
+    Examples
+    --------
+    Transformando o valor 'R$ 1.234,90' em `1234.9`.
+
+    >>> import selic
+    >>> x = 'R$ 1.234,90'
+    >>> num = selic.brl_to_float(x)
+    >>> num
+    1234.9
+    """
+    text: str = value.replace('R$', '').replace(',', '').replace('.', '').strip()
+    number: float = int(text) / 100
+    return number
+
+
+def float_to_brl(value: float, *, use_trunc: bool = False) -> str:
+    """
+    Transforma um valor decimal em um formato monetário brasileiro.
+
+    Parameters
+    ----------
+    value : float
+        Valor a ser convertido.
+
+    Returns
+    -------
+    str
+        O valor em formato monetário brasileiro.
+    use_trunc : bool, optional
+        Truncar o valor ao invés de arredondar, por definição `False`
+
+    See Also
+    --------
+    brl_to_float : Transforma um texto no formato monetário brasileiro em um valor decimal.
+
+    Examples
+    --------
+    Transformando o valor `1234.9` em 'R$ 1.234,90'.
+
+    >>> import selic
+    >>> x = 1234.9
+    >>> reais = selic.float_to_brl(x)
+    >>> reais
+    'R$ 1.234,90'
+
+    Transformando o valor `1234.567` em reais.
+
+    >>> x2 = 1234.567
+    >>> x2
+    1234.567
+    >>> reais_aredondado = selic.float_to_brl(x)
+    >>> reais_aredondado
+    'R$ 1.234,57'
+    >>> reais_truncado = selic.float_to_brl(x, use_trunc=True)
+    >>> reais
+    'R$ 1.234,56'
+    """
+    number: float = truncate(value, 2) if use_trunc else round(value, 2)
+    digits: int = int(number * 100)
+    text: str = (
+        f'R$ {digits / 100:,.2f}'.replace('.', '|').replace(',', '.').replace('|', ',')
+    )
+    return text
