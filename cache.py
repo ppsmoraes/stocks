@@ -1,3 +1,4 @@
+from datetime import date, datetime
 from os import makedirs
 from os import remove as remove_file
 from os import rmdir
@@ -10,7 +11,7 @@ from platform import system as pf_sys
 
 from pandas import DataFrame, read_parquet
 
-from log import log
+from log import log, read_jsonl_bottomup
 from selic import get_historic_selic
 
 
@@ -87,3 +88,15 @@ def get_table(table_name: str, use_cache: bool = True) -> DataFrame:
         log('INFO', 'Dados salvos localmente')
 
     return df
+
+
+def is_data_up_to_date() -> bool:
+    today: date = date.today()
+    for line in read_jsonl_bottomup('logs.jsonl'):
+        if today > datetime.fromisoformat(line['timestamp']).date():
+            break
+
+        if line['message'] == 'Dados salvos localmente':
+            return True
+
+    return False
