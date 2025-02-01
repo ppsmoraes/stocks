@@ -1,7 +1,7 @@
 from pandas import DataFrame
 
 import cache
-import selic
+import calcs
 
 
 def main() -> None:
@@ -9,9 +9,9 @@ def main() -> None:
     # print(df.tail())
 
     x = 1234.99
-    brl = selic.float_to_brl(x)
+    brl = calcs.float_to_brl(x)
     print(f'brl: {brl}')
-    number = selic.brl_to_float(brl)
+    number = calcs.brl_to_float(brl)
     print(f'number: {number}')
 
 

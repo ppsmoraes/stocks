@@ -11,8 +11,8 @@ from platform import system as pf_sys
 
 from pandas import DataFrame, read_parquet
 
+from calcs import get_historic_selic
 from log import log, read_jsonl_bottomup
-from selic import get_historic_selic
 
 
 def _get_temp_path() -> str:

@@ -140,9 +140,9 @@ def brl_to_float(value: str) -> float:
     --------
     Transformando o valor 'R$ 1.234,90' em `1234.9`.
 
-    >>> import selic
+    >>> import calcs
     >>> x = 'R$ 1.234,90'
-    >>> num = selic.brl_to_float(x)
+    >>> num = calcs.brl_to_float(x)
     >>> num
     1234.9
     """
@@ -175,9 +175,9 @@ def float_to_brl(value: float, *, use_trunc: bool = False) -> str:
     --------
     Transformando o valor `1234.9` em 'R$ 1.234,90'.
 
-    >>> import selic
+    >>> import calcs
     >>> x = 1234.9
-    >>> reais = selic.float_to_brl(x)
+    >>> reais = calcs.float_to_brl(x)
     >>> reais
     'R$ 1.234,90'
 
@@ -186,10 +186,10 @@ def float_to_brl(value: float, *, use_trunc: bool = False) -> str:
     >>> x2 = 1234.567
     >>> x2
     1234.567
-    >>> reais_aredondado = selic.float_to_brl(x)
+    >>> reais_aredondado = calcs.float_to_brl(x)
     >>> reais_aredondado
     'R$ 1.234,57'
-    >>> reais_truncado = selic.float_to_brl(x, use_trunc=True)
+    >>> reais_truncado = calcs.float_to_brl(x, use_trunc=True)
     >>> reais
     'R$ 1.234,56'
     """
