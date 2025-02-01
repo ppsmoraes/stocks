@@ -91,6 +91,14 @@ def get_table(table_name: str, use_cache: bool = True) -> DataFrame:
 
 
 def is_data_up_to_date() -> bool:
+    """
+    Verifica se os dados locais foram atualizados na data atual.
+
+    Returns
+    -------
+    bool
+        `True` se os dados locais tiverem sidos atualizados, `False` caso constrário.
+    """
     today: date = date.today()
     for line in read_jsonl_bottomup('logs.jsonl'):
         if today > datetime.fromisoformat(line['timestamp']).date():
