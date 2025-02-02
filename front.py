@@ -10,6 +10,8 @@ from PyQt6.QtWidgets import QTableWidget  # type: ignore
 from PyQt6.QtWidgets import QTableWidgetItem  # type: ignore
 from PyQt6.QtWidgets import QVBoxLayout  # type: ignore
 
+import calcs
+
 
 class InvestmentApp(QtWidgets.QWidget):
     def __init__(self):
@@ -68,30 +70,16 @@ class InvestmentApp(QtWidgets.QWidget):
         # In-memory storage for investment data
         self.investments = []
 
-    def format_amount(self):
-        text = (
-            self.amount_entry.text()
-            .replace('R$', '')
-            .replace(',', '')
-            .replace('.', '')
-            .strip()
-        )
-        if text.isdigit():
-            value = int(text)
-            formatted_value = (
-                f'R$ {value / 100:,.2f}'.replace(
-                    '.', '|'
-                )  # Using '|' as a temporary value for decimal seperator
-                .replace(',', '.')
-                .replace('|', ',')
-            )
-            self.amount_entry.blockSignals(True)
-            self.amount_entry.setText(formatted_value)
-            self.amount_entry.blockSignals(False)
-        else:
-            self.amount_entry.blockSignals(True)
-            self.amount_entry.setText(self.amount_entry.text()[:-1])
-            self.amount_entry.blockSignals(False)
+    def format_amount(self) -> None:
+        try:
+            num: float = calcs.brl_to_float(self.amount_entry.text())
+            text: str = calcs.float_to_brl(num)
+        except ValueError:
+            text = self.amount_entry.text()[:-1]
+
+        self.amount_entry.blockSignals(True)
+        self.amount_entry.setText(text)
+        self.amount_entry.blockSignals(False)
 
     def add_investment(self):
         amount = self.amount_entry.text()
