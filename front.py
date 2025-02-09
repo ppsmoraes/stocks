@@ -1,3 +1,4 @@
+from pandas import DataFrame, concat
 from PyQt6 import QtWidgets  # type: ignore
 from PyQt6.QtCore import QDate  # type: ignore
 from PyQt6.QtWidgets import QDateEdit  # type: ignore
@@ -10,6 +11,7 @@ from PyQt6.QtWidgets import QTableWidget  # type: ignore
 from PyQt6.QtWidgets import QTableWidgetItem  # type: ignore
 from PyQt6.QtWidgets import QVBoxLayout  # type: ignore
 
+import cache
 import calcs
 
 
@@ -68,7 +70,7 @@ class InvestmentApp(QtWidgets.QWidget):
         self.setLayout(main_layout)
 
         # In-memory storage for investment data
-        self.investments = []
+        self.investments = cache.get_table('investimentos', source=DataFrame)
 
     def format_amount(self) -> None:
         try:
@@ -81,7 +83,7 @@ class InvestmentApp(QtWidgets.QWidget):
         self.amount_entry.setText(text)
         self.amount_entry.blockSignals(False)
 
-    def add_investment(self):
+    def add_investment(self) -> None:
         amount = self.amount_entry.text()
         deposit_date = self.deposit_date_entry.text()
         withdrawal_date = self.withdrawal_date_entry.text()
@@ -92,12 +94,19 @@ class InvestmentApp(QtWidgets.QWidget):
             )
             return
 
-        investment = (amount, deposit_date, withdrawal_date)
-        self.investments.append(investment)
+        new_row = DataFrame(
+            {
+                'Valor': [amount],
+                'Data do Depósito': [deposit_date],
+                'Data de Retirada': [withdrawal_date],
+            }
+        )
+
+        self.investments = concat([self.investments, new_row], ignore_index=True)
         row_position = self.table.rowCount()
         self.table.insertRow(row_position)
-        for i, item in enumerate(investment):
-            self.table.setItem(row_position, i, QTableWidgetItem(item))
+        for i, item in enumerate(new_row.iloc[0]):
+            self.table.setItem(row_position, i, QTableWidgetItem(str(item)))
 
         # Clear the entry fields
         self.amount_entry.clear()
