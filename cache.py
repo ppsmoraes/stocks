@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from datetime import date, datetime
 from os import makedirs
 from os import remove as remove_file
@@ -11,7 +12,6 @@ from platform import system as pf_sys
 
 from pandas import DataFrame, read_parquet
 
-from calcs import get_historic_selic
 from log import log, read_jsonl_bottomup
 
 
@@ -43,7 +43,12 @@ def delete_temp_folder() -> None:
         rmdir(temp_path)
 
 
-def get_table(table_name: str, use_cache: bool = True) -> DataFrame:
+def get_table(
+    table_name: str,
+    *,
+    use_cache: bool = True,
+    source: Callable[[], DataFrame] | None = None,
+) -> DataFrame:
     """
     Leitura de uma tabela.
 
@@ -55,11 +60,20 @@ def get_table(table_name: str, use_cache: bool = True) -> DataFrame:
         Use `False` para forçar a leitura no banco de dados.
         `True` para usar os arquivos locais.
         Por padrão é `True`.
+    source : Callable | None, optional
+        Função que extrai os dados da fonte original.
+        Parâmetro obrigatório, caso `use_cache = False` ou se o a tabela não existir localmente.
+        Por padrão é `None`.
 
     Returns
     -------
     DataFrame
         Tabela em formato pandas.
+
+    Raises
+    ------
+    ValueError
+        Erro caso `use_cache = False` ou se o a tabela não existir localmente e `source` não ser informado.
     """
     # Getting the paths
     temp_path: str = _get_temp_path()
@@ -67,14 +81,20 @@ def get_table(table_name: str, use_cache: bool = True) -> DataFrame:
 
     # If possible, avoid read from the API
     if use_cache and path_exists(table_path):
-        log('INFO', 'Dados locais utilizados')
+        log('INFO', f'Dados locais da tabela {table_name} utilizados')
         return read_parquet(table_path)
 
-    # Reading from the API
+    if source is None:
+        log(
+            'ERROR',
+            f'Cache da tabela {table_name} não utilizado e fonte não fornecida.',
+        )
+        raise ValueError('Cache não utilizado e fonte não fornecida.')
+
     try:
-        log('INFO', 'Extração de dados da API iniciada')
-        df: DataFrame = get_historic_selic()
-        log('INFO', 'Extração de dados da API concluída')
+        log('INFO', f'Extração de dados da table {table_name} da fonte iniciada')
+        df: DataFrame = source()
+        log('INFO', f'Extração de dados da table {table_name} da fonte concluída')
     except ConnectionError as e:
         log('ERROR', str(e))
 
@@ -85,14 +105,19 @@ def get_table(table_name: str, use_cache: bool = True) -> DataFrame:
             if pf_sys() == 'Windows':
                 os_sys(f'attrib +h "{temp_path}"')
         df.to_parquet(table_path)
-        log('INFO', 'Dados salvos localmente')
+        log('INFO', f'Dados da tabela {table_name} salvos localmente')
 
     return df
 
 
-def is_data_up_to_date() -> bool:
+def is_table_up_to_date(table_name: str) -> bool:
     """
     Verifica se os dados locais foram atualizados na data atual.
+
+    Parameters
+    ----------
+    table_name : str
+        O nome da tabela.
 
     Returns
     -------
@@ -104,7 +129,7 @@ def is_data_up_to_date() -> bool:
         if today > datetime.fromisoformat(line['timestamp']).date():
             break
 
-        if line['message'] == 'Dados salvos localmente':
+        if line['message'] == f'Dados da tabela {table_name} salvos localmente':
             return True
 
     return False
