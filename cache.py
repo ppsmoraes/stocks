@@ -92,11 +92,12 @@ def get_table(
         raise ValueError('Cache não utilizado e fonte não fornecida.')
 
     try:
-        log('INFO', f'Extração de dados da table {table_name} da fonte iniciada')
+        log('INFO', f'Extração de dados da tabela {table_name} da fonte iniciada')
         df: DataFrame = source()
-        log('INFO', f'Extração de dados da table {table_name} da fonte concluída')
+        log('INFO', f'Extração de dados da tabela {table_name} da fonte concluída')
     except ConnectionError as e:
         log('ERROR', str(e))
+        raise e
 
     # Saving localy
     if not df.empty:

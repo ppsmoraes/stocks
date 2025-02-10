@@ -13,6 +13,7 @@ from PyQt6.QtWidgets import QVBoxLayout  # type: ignore
 
 import cache
 import calcs
+import data
 
 
 class InvestmentApp(QtWidgets.QWidget):
@@ -70,7 +71,7 @@ class InvestmentApp(QtWidgets.QWidget):
         self.setLayout(main_layout)
 
         # In-memory storage for investment data
-        self.investments = cache.get_table('investimentos', source=DataFrame)
+        self.investments = data.get_investiments()
 
     def format_amount(self) -> None:
         try:
@@ -94,18 +95,16 @@ class InvestmentApp(QtWidgets.QWidget):
             )
             return
 
-        new_row = DataFrame(
-            {
-                'Valor': [amount],
-                'Data do Depósito': [deposit_date],
-                'Data de Retirada': [withdrawal_date],
-            }
-        )
+        new_data = {
+            'Valor': amount,
+            'Data do Depósito': deposit_date,
+            'Data de Retirada': withdrawal_date,
+        }
 
-        self.investments = concat([self.investments, new_row], ignore_index=True)
+        self.investments = data.add_row('investimento', **new_data)
         row_position = self.table.rowCount()
         self.table.insertRow(row_position)
-        for i, item in enumerate(new_row.iloc[0]):
+        for i, item in enumerate(new_data.values()):
             self.table.setItem(row_position, i, QTableWidgetItem(str(item)))
 
         # Clear the entry fields
