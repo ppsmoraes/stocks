@@ -11,7 +11,6 @@ from PyQt6.QtWidgets import QTableWidget  # type: ignore
 from PyQt6.QtWidgets import QTableWidgetItem  # type: ignore
 from PyQt6.QtWidgets import QVBoxLayout  # type: ignore
 
-import cache
 import calcs
 import data
 
@@ -71,7 +70,7 @@ class InvestmentApp(QtWidgets.QWidget):
         self.setLayout(main_layout)
 
         # In-memory storage for investment data
-        self.investments = data.get_investiments()
+        self.investments = data.Investments()
 
     def format_amount(self) -> None:
         try:
@@ -98,10 +97,10 @@ class InvestmentApp(QtWidgets.QWidget):
         new_data = {
             'Valor': amount,
             'Data do Depósito': deposit_date,
-            'Data de Retirada': withdrawal_date,
+            'Data da Retirada': withdrawal_date,
         }
 
-        self.investments = data.add_row('investimento', **new_data)
+        self.investments.add_row(**new_data)
         row_position = self.table.rowCount()
         self.table.insertRow(row_position)
         for i, item in enumerate(new_data.values()):
