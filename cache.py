@@ -43,6 +43,28 @@ def delete_temp_folder() -> None:
         rmdir(temp_path)
 
 
+def save(dataframe: DataFrame, table_name: str) -> None:
+    """
+    Rotina que salva a tebela localmente.
+
+    Parameters
+    ----------
+    df : DataFrame
+        A tabela no formato `pandas.DataFrame`.
+    table_name : str
+        O nome da tabela.
+    """
+    temp_path: str = _get_temp_path()
+    table_path: str = path_join(temp_path, f'{table_name}.parquet')
+
+    if not path_exists(temp_path):
+        makedirs(temp_path)
+        if pf_sys() == 'Windows':
+            os_sys(f'attrib +h "{temp_path}"')
+    dataframe.to_parquet(table_path)
+    log('INFO', f'Dados da tabela {table_name} salvos localmente')
+
+
 def get_table(
     table_name: str,
     *,
@@ -99,14 +121,8 @@ def get_table(
         log('ERROR', str(e))
         raise e
 
-    # Saving localy
     if not df.empty:
-        if not path_exists(temp_path):
-            makedirs(temp_path)
-            if pf_sys() == 'Windows':
-                os_sys(f'attrib +h "{temp_path}"')
-        df.to_parquet(table_path)
-        log('INFO', f'Dados da tabela {table_name} salvos localmente')
+        save(df, table_name)
 
     return df
 

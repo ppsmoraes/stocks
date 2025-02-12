@@ -1,22 +1,13 @@
-from pandas import DataFrame
+from PyQt6.QtWidgets import QApplication  # type: ignore
 
-import cache
-import calcs
+from front import InvestmentApp
 
 
 def main() -> None:
-    df: DataFrame = cache.get_table(
-        'selic',
-        use_cache=cache.is_table_up_to_date('selic'),
-        source=calcs.get_historic_selic,
-    )
-    print(df.tail())
-
-    # x = 1234.99
-    # brl = calcs.float_to_brl(x)
-    # print(f'brl: {brl}')
-    # number = calcs.brl_to_float(brl)
-    # print(f'number: {number}')
+    app = QApplication([])
+    window = InvestmentApp()
+    window.show()
+    app.exec()
 
 
 if __name__ == '__main__':

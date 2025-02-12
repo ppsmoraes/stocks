@@ -31,8 +31,10 @@ class Tabela:
         )
 
     def save(self) -> None:
-        # TODO : Crie um método para salvar o dados localmente.
-        pass
+        """
+        Salva a tabela localmente.
+        """
+        cache.save(self.data, self.name)
 
     def add_row(self, **kwargs: dict) -> None:
         """
@@ -54,6 +56,7 @@ class Tabela:
 
         new_row: DataFrame = DataFrame.from_dict(new_row_data)
         self.data = concat([self.data, new_row], ignore_index=True)
+        self.save()
 
     def get_data(self, use_cache: bool = False) -> DataFrame:
         """
@@ -96,12 +99,3 @@ class Investments(Tabela):
             'Investimentos', ['Valor', 'Data do Depósito', 'Data da Retirada']
         )
         self.get_data(True)
-
-
-def main() -> None:
-    x = Investments()
-    print(x.data)
-
-
-if __name__ == '__main__':
-    main()

@@ -1,49 +1,39 @@
-from pandas import DataFrame, concat
-from PyQt6 import QtWidgets  # type: ignore
+from PyQt6 import QtWidgets as qw  # type: ignore
 from PyQt6.QtCore import QDate  # type: ignore
-from PyQt6.QtWidgets import QDateEdit  # type: ignore
-from PyQt6.QtWidgets import QHBoxLayout  # type: ignore
-from PyQt6.QtWidgets import QLabel  # type: ignore
-from PyQt6.QtWidgets import QLineEdit  # type: ignore
-from PyQt6.QtWidgets import QMessageBox  # type: ignore
-from PyQt6.QtWidgets import QPushButton  # type: ignore
-from PyQt6.QtWidgets import QTableWidget  # type: ignore
-from PyQt6.QtWidgets import QTableWidgetItem  # type: ignore
-from PyQt6.QtWidgets import QVBoxLayout  # type: ignore
 
 import calcs
 import data
 
 
-class InvestmentApp(QtWidgets.QWidget):
-    def __init__(self):
+class InvestmentApp(qw.QWidget):
+    def __init__(self) -> None:
         super().__init__()
         self.setWindowTitle('Investment Tracker')
 
         # Layouts
-        main_layout = QVBoxLayout()
-        form_layout = QHBoxLayout()
-        button_layout = QHBoxLayout()
-        table_layout = QVBoxLayout()
+        main_layout = qw.QVBoxLayout()
+        form_layout = qw.QHBoxLayout()
+        button_layout = qw.QHBoxLayout()
+        table_layout = qw.QVBoxLayout()
 
         # Labels and Entry widgets for input
-        self.amount_label = QLabel('Valor do Depósito:')
-        self.amount_entry = QLineEdit()
+        self.amount_label = qw.QLabel('Valor do Depósito:')
+        self.amount_entry = qw.QLineEdit()
         self.amount_entry.setText('R$ 0,00')
         self.amount_entry.textChanged.connect(self.format_amount)
         form_layout.addWidget(self.amount_label)
         form_layout.addWidget(self.amount_entry)
 
-        self.deposit_date_label = QLabel('Data do Depósito:')
-        self.deposit_date_entry = QDateEdit()
+        self.deposit_date_label = qw.QLabel('Data do Depósito:')
+        self.deposit_date_entry = qw.QDateEdit()
         self.deposit_date_entry.setDisplayFormat('dd/MM/yyyy')
         self.deposit_date_entry.setDate(QDate.currentDate())
         self.deposit_date_entry.setCalendarPopup(True)
         form_layout.addWidget(self.deposit_date_label)
         form_layout.addWidget(self.deposit_date_entry)
 
-        self.withdrawal_date_label = QLabel('Data de Retirada:')
-        self.withdrawal_date_entry = QDateEdit(QDate.currentDate())
+        self.withdrawal_date_label = qw.QLabel('Data de Retirada:')
+        self.withdrawal_date_entry = qw.QDateEdit(QDate.currentDate())
         self.withdrawal_date_entry.setDisplayFormat('dd/MM/yyyy')
         self.withdrawal_date_entry.setDate(QDate.currentDate())
         self.withdrawal_date_entry.setCalendarPopup(True)
@@ -51,12 +41,12 @@ class InvestmentApp(QtWidgets.QWidget):
         form_layout.addWidget(self.withdrawal_date_entry)
 
         # Button to add investment
-        self.add_button = QPushButton('Adicionar Investimento')
+        self.add_button = qw.QPushButton('Adicionar Investimento')
         self.add_button.clicked.connect(self.add_investment)
         button_layout.addWidget(self.add_button)
 
         # Table to display investments
-        self.table = QTableWidget(0, 3)
+        self.table = qw.QTableWidget(0, 3)
         self.table.setHorizontalHeaderLabels(
             ['Valor', 'Data do Depósito', 'Data de Retirada']
         )
@@ -69,8 +59,15 @@ class InvestmentApp(QtWidgets.QWidget):
 
         self.setLayout(main_layout)
 
-        # In-memory storage for investment data
         self.investments = data.Investments()
+        self.load_initial_data()
+
+    def load_initial_data(self) -> None:
+        for index, row in self.investments.data.iterrows():
+            row_position = self.table.rowCount()
+            self.table.insertRow(row_position)
+            for i, item in enumerate(row):
+                self.table.setItem(row_position, i, qw.QTableWidgetItem(str(item)))
 
     def format_amount(self) -> None:
         try:
@@ -89,7 +86,7 @@ class InvestmentApp(QtWidgets.QWidget):
         withdrawal_date = self.withdrawal_date_entry.text()
 
         if not amount or not deposit_date:
-            QMessageBox.critical(
+            qw.QMessageBox.critical(
                 self, 'Erro', 'Por favor, preencha todos os campos obrigatórios.'
             )
             return
@@ -104,16 +101,9 @@ class InvestmentApp(QtWidgets.QWidget):
         row_position = self.table.rowCount()
         self.table.insertRow(row_position)
         for i, item in enumerate(new_data.values()):
-            self.table.setItem(row_position, i, QTableWidgetItem(str(item)))
+            self.table.setItem(row_position, i, qw.QTableWidgetItem(str(item)))
 
         # Clear the entry fields
         self.amount_entry.clear()
         self.deposit_date_entry.setDate(QDate.currentDate())
         self.withdrawal_date_entry.setDate(QDate.currentDate())
-
-
-if __name__ == '__main__':
-    app = QtWidgets.QApplication([])
-    window = InvestmentApp()
-    window.show()
-    app.exec()
