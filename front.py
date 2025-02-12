@@ -1,8 +1,8 @@
 from PyQt6 import QtWidgets as qw  # type: ignore
 from PyQt6.QtCore import QDate  # type: ignore
 
-import calcs
-import data
+from calcs import brl_to_float, float_to_brl
+from data import Investments
 
 
 class InvestmentApp(qw.QWidget):
@@ -59,7 +59,7 @@ class InvestmentApp(qw.QWidget):
 
         self.setLayout(main_layout)
 
-        self.investments = data.Investments()
+        self.investments = Investments()
         self.load_initial_data()
 
     def load_initial_data(self) -> None:
@@ -71,8 +71,8 @@ class InvestmentApp(qw.QWidget):
 
     def format_amount(self) -> None:
         try:
-            num: float = calcs.brl_to_float(self.amount_entry.text())
-            text: str = calcs.float_to_brl(num)
+            num: float = brl_to_float(self.amount_entry.text())
+            text: str = float_to_brl(num)
         except ValueError:
             text = self.amount_entry.text()[:-1]
 

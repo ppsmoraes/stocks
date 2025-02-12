@@ -1,6 +1,7 @@
 from pandas import DataFrame, concat
 
-import cache
+from cache import get_table
+from cache import save as csave
 
 
 class Tabela:
@@ -34,7 +35,7 @@ class Tabela:
         """
         Salva a tabela localmente.
         """
-        cache.save(self.data, self.name)
+        csave(self.data, self.name)
 
     def add_row(self, **kwargs: dict) -> None:
         """
@@ -82,7 +83,7 @@ class Tabela:
                 raise FileExistsError(
                     'Já existem dados no DataFrame, extração do cache cancelada.'
                 )
-            self.data = cache.get_table(self.name, source=self.get_data)
+            self.data = get_table(self.name, source=self.get_data)
         return self.data
 
 
