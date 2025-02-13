@@ -1,6 +1,9 @@
+from datetime import date
 from math import trunc
 
 from pandas import DataFrame, read_csv
+
+from cache import get_table, is_table_up_to_date
 
 
 def truncate(number: float, decimals: int = 0) -> float:
@@ -21,6 +24,88 @@ def truncate(number: float, decimals: int = 0) -> float:
     """
     factor: int = 10**decimals
     return trunc(number * factor) / factor
+
+
+def brl_to_float(value: str) -> float:
+    """
+    Transforma um texto no formato monetário brasileiro em um valor decimal.
+
+    Parameters
+    ----------
+    value : str
+        Texto contendo o valor em reais.
+
+    Returns
+    -------
+    float
+        O valor em formato numérico.
+
+    See Also
+    --------
+    float_to_brl : Transforma um valor decimal em um formato monetário brasileiro.
+
+    Examples
+    --------
+    Transformando o valor 'R$ 1.234,90' em `1234.9`.
+
+    >>> import calcs
+    >>> x = 'R$ 1.234,90'
+    >>> num = calcs.brl_to_float(x)
+    >>> num
+    1234.9
+    """
+    text: str = value.replace('R$', '').replace(',', '').replace('.', '').strip()
+    return int(text) / 100
+
+
+def float_to_brl(value: float, *, use_trunc: bool = False) -> str:
+    """
+    Transforma um valor decimal em um formato monetário brasileiro.
+
+    Parameters
+    ----------
+    value : float
+        Valor a ser convertido.
+
+    Returns
+    -------
+    str
+        O valor em formato monetário brasileiro.
+    use_trunc : bool, optional
+        Truncar o valor ao invés de arredondar, por definição `False`
+
+    See Also
+    --------
+    brl_to_float : Transforma um texto no formato monetário brasileiro em um valor decimal.
+
+    Examples
+    --------
+    Transformando o valor `1234.9` em 'R$ 1.234,90'.
+
+    >>> import calcs
+    >>> x = 1234.9
+    >>> reais = calcs.float_to_brl(x)
+    >>> reais
+    'R$ 1.234,90'
+
+    Transformando o valor `1234.567` em reais.
+
+    >>> x2 = 1234.567
+    >>> x2
+    1234.567
+    >>> reais_aredondado = calcs.float_to_brl(x)
+    >>> reais_aredondado
+    'R$ 1.234,57'
+    >>> reais_truncado = calcs.float_to_brl(x, use_trunc=True)
+    >>> reais
+    'R$ 1.234,56'
+    """
+    number: float = truncate(value, 2) if use_trunc else round(value, 2)
+    digits: int = int(number * 100)
+    text: str = (
+        f'R$ {digits / 100:,.2f}'.replace('.', '|').replace(',', '.').replace('|', ',')
+    )
+    return text
 
 
 def get_iof(days: int) -> float:
@@ -118,84 +203,24 @@ def get_historic_selic() -> DataFrame:
     return data
 
 
-def brl_to_float(value: str) -> float:
+def get_selic_accumulated(start_date: date, end_date: date) -> float:
     """
-    Transforma um texto no formato monetário brasileiro em um valor decimal.
+    Calcula o valor acumulado, em percentual, da taxa selic.
 
     Parameters
     ----------
-    value : str
-        Texto contendo o valor em reais.
+    start_date : datetime.date
+        A data inicial a ser considerada.
+    end_date : datetime.date
+        A data final a ser considerada.
+        Se a data final for maior que a data atual, será contabilizado somente até atual.
 
     Returns
     -------
     float
-        O valor em formato numérico.
-
-    See Also
-    --------
-    float_to_brl : Transforma um valor decimal em um formato monetário brasileiro.
-
-    Examples
-    --------
-    Transformando o valor 'R$ 1.234,90' em `1234.9`.
-
-    >>> import calcs
-    >>> x = 'R$ 1.234,90'
-    >>> num = calcs.brl_to_float(x)
-    >>> num
-    1234.9
+        O valor, em percentual, da taxa selic.
     """
-    text: str = value.replace('R$', '').replace(',', '').replace('.', '').strip()
-    number: float = int(text) / 100
-    return number
-
-
-def float_to_brl(value: float, *, use_trunc: bool = False) -> str:
-    """
-    Transforma um valor decimal em um formato monetário brasileiro.
-
-    Parameters
-    ----------
-    value : float
-        Valor a ser convertido.
-
-    Returns
-    -------
-    str
-        O valor em formato monetário brasileiro.
-    use_trunc : bool, optional
-        Truncar o valor ao invés de arredondar, por definição `False`
-
-    See Also
-    --------
-    brl_to_float : Transforma um texto no formato monetário brasileiro em um valor decimal.
-
-    Examples
-    --------
-    Transformando o valor `1234.9` em 'R$ 1.234,90'.
-
-    >>> import calcs
-    >>> x = 1234.9
-    >>> reais = calcs.float_to_brl(x)
-    >>> reais
-    'R$ 1.234,90'
-
-    Transformando o valor `1234.567` em reais.
-
-    >>> x2 = 1234.567
-    >>> x2
-    1234.567
-    >>> reais_aredondado = calcs.float_to_brl(x)
-    >>> reais_aredondado
-    'R$ 1.234,57'
-    >>> reais_truncado = calcs.float_to_brl(x, use_trunc=True)
-    >>> reais
-    'R$ 1.234,56'
-    """
-    number: float = truncate(value, 2) if use_trunc else round(value, 2)
-    digits: int = int(number * 100)
-    text: str = (
-        f'R$ {digits / 100:,.2f}'.replace('.', '|').replace(',', '.').replace('|', ',')
+    selic_df: DataFrame = get_table(
+        'Selic', use_cache=is_table_up_to_date('Selic'), source=get_historic_selic
     )
-    return text
+    return selic_df.loc[slice(start_date, end_date), 'valor'].sum()
